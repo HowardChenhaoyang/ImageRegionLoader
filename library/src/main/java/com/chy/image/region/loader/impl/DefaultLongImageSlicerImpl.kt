@@ -4,22 +4,24 @@ import com.chy.image.region.loader.inter.ImageRegionDecoder
 import android.content.Context
 import android.graphics.Rect
 import android.net.Uri
+import android.util.Log
 import com.chy.image.region.loader.inter.LongImageSlicerInterface
 import com.chy.image.region.loader.model.BitmapInfo
 import com.chy.image.region.loader.model.BitmapRegionModel
+import com.chy.image.region.loader.util.ImageRegionDecoderFactory
 
 internal class DefaultLongImageSlicerImpl : LongImageSlicerInterface {
 
-    private var splitCount = 1
     private val decoders = mutableMapOf<String, ImageRegionDecoder>()
 
     override fun split(context: Context, uri: Uri, bitmapInfo: BitmapInfo): List<BitmapRegionModel> {
 
+        var splitCount = 1
         val decoder =
             if (decoders[uri.toString()] != null) {
                 decoders[uri.toString()]!!
             } else {
-                if (uri.toString().startsWith("http")) OkHttpImageRegionDecoder() else FileBitmapRegionDecoder()
+                ImageRegionDecoderFactory.createImageRegionDecoder(uri)
             }
 
         val (bitmapWidth, bitmapHeight, requestWidth, _) = bitmapInfo
@@ -45,6 +47,11 @@ internal class DefaultLongImageSlicerImpl : LongImageSlicerInterface {
                 bitmapWidth,
                 if (i == splitCount - 1) bitmapHeight else (i + 1) * itemHeight
             )
+            if (uri.toString().contains("image02")){
+                Log.e("chy","sRect "+sRect)
+                Log.e("chy","count "+splitCount)
+                Log.e("chy","i "+i)
+            }
             bitmapRegionModels.add(
                 BitmapRegionModel(
                     context = context,

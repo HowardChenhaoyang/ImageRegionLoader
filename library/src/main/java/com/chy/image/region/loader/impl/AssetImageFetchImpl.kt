@@ -4,12 +4,10 @@ import android.content.Context
 import android.net.Uri
 import com.chy.image.region.loader.inter.BitmapFetchCallBack
 import com.chy.image.region.loader.inter.BitmapFetchInterface
-import com.chy.image.region.loader.util.ImageRegionDecoderFactory.Companion.FILE_PREFIX
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileNotFoundException
+import com.chy.image.region.loader.util.ImageRegionDecoderFactory.Companion.ASSET_PREFIX
+import java.io.InputStream
 
-internal class FileImageFetchImpl : BitmapFetchInterface {
+internal class AssetImageFetchImpl : BitmapFetchInterface {
 
     override fun recycle() {
         bitmapFetchCallBacks.clear()
@@ -20,17 +18,10 @@ internal class FileImageFetchImpl : BitmapFetchInterface {
     }
 
     override fun fetchBitmap(context: Context, uri: Uri) {
-        val filePath = uri.toString().substring(FILE_PREFIX.length)
-        val file = File(filePath)
-        if (!file.exists()) {
-            for (bitmapFetchCallBack in bitmapFetchCallBacks) {
-                bitmapFetchCallBack.fail(uri, FileNotFoundException("file not exist"))
-            }
-            return
-        }
-        val inputStream: FileInputStream
+        val inputStream: InputStream
         try {
-            inputStream = file.inputStream()
+            val assetFileName = uri.toString().substring(ASSET_PREFIX.length)
+            inputStream = context.resources.assets.open(assetFileName)
         } catch (e: Exception) {
             for (bitmapFetchCallBack in bitmapFetchCallBacks) {
                 bitmapFetchCallBack.fail(uri, e)
