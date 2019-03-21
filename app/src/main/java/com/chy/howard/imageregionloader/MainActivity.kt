@@ -6,14 +6,17 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.ViewGroup
 import android.widget.ImageView
 import com.chy.image.region.loader.model.BitmapInfo
 import com.chy.image.region.loader.model.BitmapRegionModel
+import com.chy.image.region.loader.util.BitmapUtil
 import com.chy.image.region.loader.util.ImageRegionDecoderFactory.Companion.ASSET_PREFIX
 import com.chy.image.region.loader.util.LongImageSlicerFactory
 import com.chy.image.region.loader.view.RegionImageView
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,11 +27,6 @@ class MainActivity : AppCompatActivity() {
         "${ASSET_PREFIX}image02.jpg",
         "${ASSET_PREFIX}image03.jpg"
     )
-    private val mImageSizes = arrayOf(
-        Point(690, 6352),
-        Point(690, 5385),
-        Point(690, 15143)
-    )
 
     private val mBitmapRegionModels = mutableListOf<BitmapRegionModel>()
 
@@ -36,19 +34,31 @@ class MainActivity : AppCompatActivity() {
         applicationContext.resources.displayMetrics.widthPixels
     }
 
+    private val mScreenHeight: Int by lazy(LazyThreadSafetyMode.NONE) {
+        applicationContext.resources.displayMetrics.heightPixels
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        mImagesUrls.forEachIndexed { index, url ->
-            val imageSize = mImageSizes[index]
-            val bitmapInfo = BitmapInfo(
-                bitmapWidth = imageSize.x,
-                bitmapHeight = imageSize.y,
-                requestWidth = mScreenWidth,
-                requestHeight = (mScreenWidth * (imageSize.y / imageSize.x.toFloat())).toInt()
-            )
-            mBitmapRegionModels.addAll(mLongImageSlicer.split(applicationContext, Uri.parse(url), bitmapInfo))
+        thread {
+            mImagesUrls.forEachIndexed { _, url ->
+                val options = BitmapUtil.getBitmapSize(applicationContext, Uri.parse(url))
+                val bitmapWidth = options?.outWidth ?: mScreenWidth
+                val bitmapHeight = options?.outHeight ?: mScreenHeight
+
+                val bitmapInfo = BitmapInfo(
+                    bitmapWidth = bitmapWidth,
+                    bitmapHeight = bitmapHeight,
+                    requestWidth = mScreenWidth,
+                    requestHeight = (mScreenWidth * (bitmapHeight / bitmapWidth.toFloat())).toInt()
+                )
+                Log.d("MainActivity","bitmapWidth is $bitmapWidth bitmapHeight is $bitmapHeight")
+                mBitmapRegionModels.addAll(mLongImageSlicer.split(applicationContext, Uri.parse(url), bitmapInfo))
+            }
+            recyclerView.adapter!!.notifyDataSetChanged()
         }
+
         recyclerView.layoutManager = LinearLayoutManager(this).apply { orientation = LinearLayoutManager.VERTICAL }
         recyclerView.adapter = object : RecyclerView.Adapter<MyViewHolder>() {
             override fun onCreateViewHolder(p0: ViewGroup, p1: Int): MyViewHolder {

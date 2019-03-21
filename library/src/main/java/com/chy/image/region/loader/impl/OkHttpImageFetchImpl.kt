@@ -1,7 +1,7 @@
 package com.chy.image.region.loader.impl
 
 import com.chy.image.region.loader.inter.BitmapFetchCallBack
-import com.chy.image.region.loader.inter.BitmapFetchInterface
+import com.chy.image.region.loader.inter.ImageFetchInterface
 import android.content.Context
 import android.net.Uri
 import android.os.Handler
@@ -12,7 +12,7 @@ import com.chy.image.region.loader.util.DecodeRegionExecutor
 import com.chy.image.region.loader.util.OkHttpInstance
 import java.io.IOException
 
-internal class OkHttpBitmapFetchImpl : BitmapFetchInterface {
+internal class OkHttpImageFetchImpl : ImageFetchInterface {
 
     override fun recycle() {
         this.call?.cancel()

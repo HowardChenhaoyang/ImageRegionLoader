@@ -13,11 +13,11 @@ import com.chy.image.region.loader.util.DecodeRegionExecutor
 import java.io.InputStream
 import java.util.concurrent.Future
 
-internal open class DefaultImageRegionDecoder<T : BitmapFetchInterface>(bitmapFetchInterfaceClazz: Class<T>) :
+internal open class DefaultImageRegionDecoder<T : ImageFetchInterface>(bitmapFetchInterfaceClazz: Class<T>) :
     ImageRegionDecoder {
 
     private var mDecodeUrl: String? = null
-    private var mBitmapFetch: BitmapFetchInterface = bitmapFetchInterfaceClazz.newInstance()
+    private var mImageFetch: ImageFetchInterface = bitmapFetchInterfaceClazz.newInstance()
     private var mBitmapRegionDecoder: BitmapRegionDecoder? = null
     private val decoderLock = Any()
     @Volatile
@@ -42,8 +42,8 @@ internal open class DefaultImageRegionDecoder<T : BitmapFetchInterface>(bitmapFe
 
         override fun fail(uri: Uri, exception: Throwable) {
             checkThread()
-            mBitmapFetch.unregisterBitmapFetchCallBack(this)
-            mBitmapFetch = bitmapFetchInterfaceClazz.newInstance()
+            mImageFetch.unregisterBitmapFetchCallBack(this)
+            mImageFetch = bitmapFetchInterfaceClazz.newInstance()
             mNeedFetchBitmap = true
         }
     }
@@ -63,8 +63,8 @@ internal open class DefaultImageRegionDecoder<T : BitmapFetchInterface>(bitmapFe
 
     private fun init(decodeRegionModel: DecodeRegionModel) {
         if (mNeedFetchBitmap) {
-            mBitmapFetch.registerBitmapFetchCallBack(mBitmapFetchCallBack)
-            mBitmapFetch.fetchBitmap(decodeRegionModel.context, decodeRegionModel.uri)
+            mImageFetch.registerBitmapFetchCallBack(mBitmapFetchCallBack)
+            mImageFetch.fetchBitmap(decodeRegionModel.context, decodeRegionModel.uri)
             mNeedFetchBitmap = false
             mDecodeUrl = decodeRegionModel.uri.toString()
         }
@@ -161,8 +161,8 @@ internal open class DefaultImageRegionDecoder<T : BitmapFetchInterface>(bitmapFe
 
     override fun recycle() {
         checkThread()
-        mBitmapFetch.recycle()
-        mBitmapFetch.unregisterBitmapFetchCallBack(mBitmapFetchCallBack)
+        mImageFetch.recycle()
+        mImageFetch.unregisterBitmapFetchCallBack(mBitmapFetchCallBack)
         mBitmapRegionDecoder?.recycle()
         mPendingDecodeRegionModels.clear()
         mPendingDecodeRegionCallBacks.clear()

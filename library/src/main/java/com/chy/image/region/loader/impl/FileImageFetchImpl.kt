@@ -3,13 +3,13 @@ package com.chy.image.region.loader.impl
 import android.content.Context
 import android.net.Uri
 import com.chy.image.region.loader.inter.BitmapFetchCallBack
-import com.chy.image.region.loader.inter.BitmapFetchInterface
+import com.chy.image.region.loader.inter.ImageFetchInterface
 import com.chy.image.region.loader.util.ImageRegionDecoderFactory.Companion.FILE_PREFIX
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileNotFoundException
 
-internal class FileImageFetchImpl : BitmapFetchInterface {
+internal class FileImageFetchImpl : ImageFetchInterface {
 
     override fun recycle() {
         bitmapFetchCallBacks.clear()

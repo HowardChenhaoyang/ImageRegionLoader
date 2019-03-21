@@ -3,11 +3,12 @@ package com.chy.image.region.loader.impl
 import android.content.Context
 import android.net.Uri
 import com.chy.image.region.loader.inter.BitmapFetchCallBack
-import com.chy.image.region.loader.inter.BitmapFetchInterface
+import com.chy.image.region.loader.inter.ImageFetchInterface
+import com.chy.image.region.loader.util.InputStreamFactory
 import java.io.FileNotFoundException
 import java.io.InputStream
 
-class ContentImageFetchImpl : BitmapFetchInterface {
+class ContentImageFetchImpl : ImageFetchInterface {
 
     override fun recycle() {
         bitmapFetchCallBacks.clear()
@@ -20,7 +21,7 @@ class ContentImageFetchImpl : BitmapFetchInterface {
     override fun fetchBitmap(context: Context, uri: Uri) {
         var inputStream: InputStream?
         try {
-            inputStream = context.contentResolver.openInputStream(uri)
+            inputStream = InputStreamFactory.createInputStreamFromContent(context, uri)
         } catch (e: Exception) {
             for (bitmapFetchCallBack in bitmapFetchCallBacks) {
                 bitmapFetchCallBack.fail(uri, e)

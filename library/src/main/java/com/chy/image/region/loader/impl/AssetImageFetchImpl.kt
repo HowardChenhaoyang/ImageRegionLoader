@@ -1,13 +1,15 @@
 package com.chy.image.region.loader.impl
 
 import android.content.Context
+import android.content.res.Resources
 import android.net.Uri
 import com.chy.image.region.loader.inter.BitmapFetchCallBack
-import com.chy.image.region.loader.inter.BitmapFetchInterface
+import com.chy.image.region.loader.inter.ImageFetchInterface
 import com.chy.image.region.loader.util.ImageRegionDecoderFactory.Companion.ASSET_PREFIX
+import com.chy.image.region.loader.util.InputStreamFactory
 import java.io.InputStream
 
-internal class AssetImageFetchImpl : BitmapFetchInterface {
+internal class AssetImageFetchImpl : ImageFetchInterface {
 
     override fun recycle() {
         bitmapFetchCallBacks.clear()
@@ -18,13 +20,18 @@ internal class AssetImageFetchImpl : BitmapFetchInterface {
     }
 
     override fun fetchBitmap(context: Context, uri: Uri) {
-        val inputStream: InputStream
+        val inputStream: InputStream?
         try {
-            val assetFileName = uri.toString().substring(ASSET_PREFIX.length)
-            inputStream = context.resources.assets.open(assetFileName)
+            inputStream = InputStreamFactory.createInputStreamFromAssets(context, uri)
         } catch (e: Exception) {
             for (bitmapFetchCallBack in bitmapFetchCallBacks) {
                 bitmapFetchCallBack.fail(uri, e)
+            }
+            return
+        }
+        if (inputStream == null) {
+            for (bitmapFetchCallBack in bitmapFetchCallBacks) {
+                bitmapFetchCallBack.fail(uri, Resources.NotFoundException("uri is $uri"))
             }
             return
         }
